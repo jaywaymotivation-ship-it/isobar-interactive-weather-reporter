@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Isobar Weather Report</title>
+    <title>Isobar | Weather Report</title>
     <meta
       name="description"
-      content="Interactive weather reporter built with Open-Meteo data."
+      content="Interactive weather reporter for cities and your current location."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -16,7 +16,7 @@
     />
     <link rel="stylesheet" href="style.css" />
   </head>
-  <body>
+  <body class="theme-dark">
     <div class="page-shell">
       <header class="topbar">
         <div class="brand-wrap">
@@ -26,18 +26,27 @@
             <h1>Isobar</h1>
           </div>
         </div>
+
+        <div class="toolbar">
+          <button id="themeToggle" class="secondary-button" type="button" aria-label="Toggle theme">
+            🌙 Dark mode
+          </button>
+          <button id="useLocationButton" class="secondary-button" type="button">
+            📍 Use my location
+          </button>
+        </div>
       </header>
 
       <main class="app">
         <section class="search-panel card">
-          <label for="cityInput" class="label">Choose a location</label>
           <div class="search-row">
+            <label class="sr-only" for="cityInput">City or location</label>
             <input
               id="cityInput"
               type="text"
               value="London"
-              placeholder="Search for a city"
-              aria-label="City name"
+              placeholder="Search for a location"
+              aria-label="Search by city name"
             />
             <button id="searchButton" type="button">Report</button>
           </div>
@@ -46,7 +55,7 @@
         <section id="status" class="status" aria-live="polite"></section>
 
         <section class="weather-grid">
-          <article id="todayCard" class="card weather-card highlight" aria-live="polite">
+          <article id="todayCard" class="card weather-card" aria-live="polite">
             <div class="weather-header">
               <div>
                 <p class="eyebrow">Current conditions</p>
@@ -72,6 +81,18 @@
               <div>
                 <dt>Wind</dt>
                 <dd id="wind">-- km/h</dd>
+              </div>
+              <div>
+                <dt>Rain</dt>
+                <dd id="rainChance">--%</dd>
+              </div>
+              <div>
+                <dt>Sunrise</dt>
+                <dd id="sunrise">--:--</dd>
+              </div>
+              <div>
+                <dt>Sunset</dt>
+                <dd id="sunset">--:--</dd>
               </div>
             </dl>
           </article>

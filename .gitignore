@@ -1,3 +1,42 @@
-node_modules/
-.DS_Store
-.env
+# isobar-interactive-weather-reporter
+
+Interactive weather reporter project.
+
+## Overview
+This project is a polished, browser-based weather reporter that uses the Open-Meteo API to fetch real-time weather and display a friendly, readable weather summary for a selected city or your current location.
+
+## Features
+- Search by city name
+- Use your device location with the browser geolocation API
+- View current temperature, feels-like temperature, humidity, wind, rainfall probability, and sunrise/sunset
+- Read a short natural-language weather report tailored to the conditions
+- See a 5-day forecast
+- Toggle between light and dark themes
+- Responsive layout for desktop and mobile
+
+## Run locally
+From the project root, start a local web server:
+
+```bash
+python3 -m http.server 8000
+```
+
+Then open:
+
+```text
+http://localhost:8000
+```
+
+## Files
+- `index.html` — application markup
+- `style.css` — visual design, responsive layout, and theme styling
+- `app.js` — weather fetching, location handling, narrative generation, and rendering logic
+
+## API notes
+The app uses public APIs from Open-Meteo and does not require an API key for standard weather lookups.
+
+## Suggested next ideas
+- Add unit switching between Celsius and Fahrenheit
+- Show an hourly forecast panel
+- Add more personalized recommendations such as outfit or travel suggestions
+- Convert the app to a React or Next.js version for easier scaling
