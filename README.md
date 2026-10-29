@@ -2,6 +2,7 @@ const cityInput = document.getElementById('cityInput');
 const searchButton = document.getElementById('searchButton');
 const useLocationButton = document.getElementById('useLocationButton');
 const themeToggle = document.getElementById('themeToggle');
+const unitToggle = document.getElementById('unitToggle');
 const statusEl = document.getElementById('status');
 const locationNameEl = document.getElementById('locationName');
 const weatherIconEl = document.getElementById('weatherIcon');
@@ -14,10 +15,14 @@ const rainChanceEl = document.getElementById('rainChance');
 const sunriseEl = document.getElementById('sunrise');
 const sunsetEl = document.getElementById('sunset');
 const narrativeEl = document.getElementById('narrative');
+const recommendationEl = document.getElementById('recommendation');
 const forecastEl = document.getElementById('forecast');
+const hourlyForecastEl = document.getElementById('hourlyForecast');
 
 const defaultLocation = 'London';
 let currentTheme = 'dark';
+let currentUnit = 'C';
+let currentWeatherData = null;
 
 const weatherCodeMap = {
   0: { label: 'Clear sky', icon: '☀️' },
@@ -50,6 +55,15 @@ const weatherCodeMap = {
   99: { label: 'Severe thunderstorm', icon: '⛈️' }
 };
 
+function cToF(value) {
+  return (value * 9) / 5 + 32;
+}
+
+function formatTemp(value) {
+  const converted = currentUnit === 'F' ? cToF(value) : value;
+  return `${Math.round(converted)}°${currentUnit}`;
+}
+
 function setStatus(message, isError = false) {
   statusEl.textContent = message;
   statusEl.classList.toggle('error', isError);
@@ -76,26 +90,40 @@ function formatDay(dateString) {
   });
 }
 
-function toCelsius(value) {
-  return (value - 32) * (5 / 9);
+function getRecommendation(currentTemp, humidity, rainChance, weatherLabel) {
+  if (currentTemp >= 30) {
+    return 'It is hot outside, so carry water, stay shaded, and plan any outdoor activity earlier in the day.';
+  }
+
+  if (currentTemp >= 20) {
+    return 'Conditions are comfortable for most activities. A light layer is a good idea if the wind picks up.';
+  }
+
+  if (currentTemp >= 10) {
+    return 'It will feel cool and manageable. A light jacket is a smart choice for the evening.';
+  }
+
+  if (rainChance >= 50 || /rain|drizzle|storm/i.test(weatherLabel)) {
+    return 'Rain is likely, so keep an umbrella handy and plan for a slower outdoor pace.';
+  }
+
+  return 'Expect cooler air and calmer conditions, so layer up and enjoy a slower, more comfortable day outside.';
 }
 
-function getNarrativeText({ weatherLabel, temperature, feelsLike, humidity, wind, rainChance, cityName, precipitationType }) {
+function getNarrativeText({ weatherLabel, temperature, feelsLike, humidity, wind, rainChance, cityName }) {
   const tempDescriptor = temperature >= 28
-    ? 'hot and energetic'
+    ? 'warm and energetic'
     : temperature >= 18
       ? 'mild and comfortable'
       : temperature >= 8
         ? 'cool with a crisp edge'
         : 'chilly and brisk';
 
-  const rainDescriptor = precipitationType === 'rain'
-    ? `Expect a little moisture in the air, with a ${rainChance}% chance of rain.`
-    : precipitationType === 'snow'
-      ? `There’s a ${rainChance}% chance of snow, so conditions may feel especially cold.`
-      : `Conditions are fairly stable, with a ${rainChance}% chance of precipitation.`;
+  const rainDescriptor = rainChance >= 50
+    ? `There is a ${rainChance}% chance of precipitation.`
+    : `Conditions look fairly stable, with a ${rainChance}% chance of precipitation.`;
 
-  return `${cityName} is feeling ${weatherLabel.toLowerCase()} with a temperature of ${Math.round(temperature)}°C. It feels like ${Math.round(feelsLike)}°C and the air is ${humidity}% humid. Winds are moving at about ${Math.round(wind)} km/h, making the day ${tempDescriptor}. ${rainDescriptor}`;
+  return `${cityName} is ${weatherLabel.toLowerCase()} with a temperature of ${formatTemp(temperature)}. It feels like ${formatTemp(feelsLike)}, with ${humidity}% humidity and winds around ${Math.round(wind)} km/h. The atmosphere feels ${tempDescriptor}. ${rainDescriptor}`;
 }
 
 function getWeatherSummary(code, temperature) {
@@ -125,58 +153,89 @@ function renderForecast(days) {
 
     const range = document.createElement('div');
     range.className = 'range';
-    range.textContent = `${Math.round(day.tempMin)}° / ${Math.round(day.tempMax)}°`;
+    range.textContent = `${formatTemp(day.tempMin)} / ${formatTemp(day.tempMax)}`;
 
     card.append(name, icon, range);
     forecastEl.append(card);
   });
 }
 
+function renderHourly(hourly) {
+  hourlyForecastEl.innerHTML = '';
+
+  const times = hourly.time.slice(0, 12);
+  const temps = hourly.temperature_2m.slice(0, 12);
+  const codes = hourly.weather_code.slice(0, 12);
+  const precip = hourly.precipitation_probability.slice(0, 12);
+
+  times.forEach((time, index) => {
+    const card = document.createElement('article');
+    card.className = 'hour-card';
+
+    const hourLabel = document.createElement('div');
+    hourLabel.className = 'hour-name';
+    hourLabel.textContent = new Date(time).toLocaleTimeString([], { hour: 'numeric' });
+
+    const icon = document.createElement('div');
+    icon.className = 'icon';
+    icon.textContent = weatherCodeMap[codes[index]]?.icon || '🌤️';
+
+    const temp = document.createElement('div');
+    temp.className = 'temp';
+    temp.textContent = formatTemp(temps[index]);
+
+    const chance = document.createElement('div');
+    chance.className = 'range';
+    chance.textContent = `${Math.round(precip[index])}% rain`;
+
+    card.append(hourLabel, icon, temp, chance);
+    hourlyForecastEl.append(card);
+  });
+}
+
 function renderWeather(data) {
+  currentWeatherData = data;
   const current = data.current;
-  const daily = data.daily;
   const weatherInfo = weatherCodeMap[current.weather_code] || weatherCodeMap[0];
   const currentTemp = current.temperature_2m;
   const feelsLike = current.apparent_temperature;
+  const humidity = Math.round(current.relative_humidity_2m);
   const wind = current.wind_speed_10m;
   const rainChance = current.precipitation_probability ?? 0;
 
   locationNameEl.textContent = `${data.location.name}, ${data.location.country}`;
   weatherIconEl.textContent = weatherInfo.icon;
-  temperatureEl.textContent = `${Math.round(currentTemp)}°C`;
+  temperatureEl.textContent = formatTemp(currentTemp);
   summaryEl.textContent = getWeatherSummary(current.weather_code, currentTemp);
-  feelsLikeEl.textContent = `${Math.round(feelsLike)}°C`;
-  humidityEl.textContent = `${Math.round(current.relative_humidity_2m)}%`;
+  feelsLikeEl.textContent = formatTemp(feelsLike);
+  humidityEl.textContent = `${humidity}%`;
   windEl.textContent = `${Math.round(wind)} km/h`;
   rainChanceEl.textContent = `${Math.round(rainChance)}%`;
   sunriseEl.textContent = formatClock(data.daily.sunrise[0]);
   sunsetEl.textContent = formatClock(data.daily.sunset[0]);
 
-  const precipitationType = current.precipitation > 0
-    ? current.temperature_2m <= 0
-      ? 'snow'
-      : 'rain'
-    : 'clear';
-
   narrativeEl.textContent = getNarrativeText({
     weatherLabel: weatherInfo.label,
     temperature: currentTemp,
     feelsLike,
-    humidity: Math.round(current.relative_humidity_2m),
+    humidity,
     wind,
     rainChance,
-    cityName: data.location.name,
-    precipitationType
+    cityName: data.location.name
   });
 
+  recommendationEl.textContent = getRecommendation(currentTemp, humidity, rainChance, weatherInfo.label);
+
   renderForecast(
-    daily.time.map((date, index) => ({
+    data.daily.time.map((date, index) => ({
       date,
-      weather_code: daily.weather_code[index],
-      tempMin: daily.temperature_2m_min[index],
-      tempMax: daily.temperature_2m_max[index]
+      weather_code: data.daily.weather_code[index],
+      tempMin: data.daily.temperature_2m_min[index],
+      tempMax: data.daily.temperature_2m_max[index]
     }))
   );
+
+  renderHourly(data.hourly);
 }
 
 async function reverseGeocode(latitude, longitude) {
@@ -228,7 +287,7 @@ async function fetchWeatherForCity(city) {
   const place = await lookupCity(city);
 
   const weatherResponse = await fetch(
-    `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&forecast_days=5&timezone=auto`
+    `https://api.open-meteo.com/v1/forecast?latitude=${place.latitude}&longitude=${place.longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation,precipitation_probability&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&forecast_days=5&timezone=auto`
   );
 
   if (!weatherResponse.ok) {
@@ -243,6 +302,7 @@ async function fetchWeatherForCity(city) {
       country: place.country
     },
     current: payload.current,
+    hourly: payload.hourly,
     daily: payload.daily
   };
 }
@@ -251,7 +311,7 @@ async function fetchWeatherForCoordinates(latitude, longitude) {
   const place = await reverseGeocode(latitude, longitude);
 
   const weatherResponse = await fetch(
-    `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&forecast_days=5&timezone=auto`
+    `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,precipitation,precipitation_probability&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset&forecast_days=5&timezone=auto`
   );
 
   if (!weatherResponse.ok) {
@@ -266,8 +326,14 @@ async function fetchWeatherForCoordinates(latitude, longitude) {
       country: place.country
     },
     current: payload.current,
+    hourly: payload.hourly,
     daily: payload.daily
   };
+}
+
+function refreshDisplayedUnit() {
+  if (!currentWeatherData) return;
+  renderWeather(currentWeatherData);
 }
 
 async function loadWeatherForInput() {
@@ -320,9 +386,16 @@ cityInput.addEventListener('keydown', (event) => {
   }
 });
 
+unitToggle.addEventListener('click', () => {
+  currentUnit = currentUnit === 'C' ? 'F' : 'C';
+  unitToggle.textContent = currentUnit === 'C' ? '°F' : '°C';
+  refreshDisplayedUnit();
+});
+
 themeToggle.addEventListener('click', () => {
   setTheme(currentTheme === 'dark' ? 'light' : 'dark');
 });
 
 setTheme('dark');
+unitToggle.textContent = '°F';
 loadWeatherForInput();

@@ -31,6 +31,9 @@
           <button id="themeToggle" class="secondary-button" type="button" aria-label="Toggle theme">
             🌙 Dark mode
           </button>
+          <button id="unitToggle" class="secondary-button" type="button" aria-label="Toggle temperature unit">
+            °F
+          </button>
           <button id="useLocationButton" class="secondary-button" type="button">
             📍 Use my location
           </button>
@@ -103,6 +106,13 @@
             <p id="narrative" class="narrative">
               Checking the atmosphere for your selected location.
             </p>
+
+            <div class="insight-box">
+              <p class="eyebrow">Advice</p>
+              <p id="recommendation" class="recommendation">
+                Preparing a practical recommendation for the day.
+              </p>
+            </div>
           </aside>
         </section>
 
@@ -112,6 +122,14 @@
             <h3>Next few days</h3>
           </div>
           <div id="forecast" class="forecast-list"></div>
+        </section>
+
+        <section class="card hourly-panel">
+          <div class="forecast-header">
+            <p class="eyebrow">Hourly outlook</p>
+            <h3>Next 12 hours</h3>
+          </div>
+          <div id="hourlyForecast" class="hourly-forecast"></div>
         </section>
       </main>
     </div>

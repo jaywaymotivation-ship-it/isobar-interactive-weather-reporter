@@ -11,6 +11,7 @@
   --shadow: rgba(1, 8, 16, 0.3);
   --day-card: rgba(9, 22, 31, 0.6);
   --button-text: #041924;
+  --insight-bg: rgba(120, 210, 255, 0.08);
 }
 
 body.theme-light {
@@ -26,6 +27,7 @@ body.theme-light {
   --shadow: rgba(75, 99, 124, 0.14);
   --day-card: rgba(241, 247, 255, 0.9);
   --button-text: #f3fbff;
+  --insight-bg: rgba(75, 180, 255, 0.08);
 }
 
 * {
@@ -140,7 +142,8 @@ h1 {
 .search-panel,
 .forecast-panel,
 .narrative-panel,
-.weather-card {
+.weather-card,
+.hourly-panel {
   padding: 20px 22px;
 }
 
@@ -286,7 +289,22 @@ body.theme-light .weather-card {
   font-size: 1.02rem;
 }
 
-.forecast-panel {
+.insight-box {
+  margin-top: 20px;
+  background: var(--insight-bg);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.recommendation {
+  margin-top: 10px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.forecast-panel,
+.hourly-panel {
   display: grid;
   gap: 18px;
 }
@@ -297,30 +315,35 @@ body.theme-light .weather-card {
   align-items: center;
 }
 
-.forecast-list {
+.forecast-list,
+.hourly-forecast {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 14px;
 }
 
-.day-card {
+.day-card,
+.hour-card {
   border: 1px solid var(--line);
   border-radius: 16px;
   padding: 16px;
   background: var(--day-card);
 }
 
-.day-card .day-name {
+.day-card .day-name,
+.hour-card .hour-name {
   font-weight: 700;
   margin-bottom: 8px;
 }
 
-.day-card .icon {
+.day-card .icon,
+.hour-card .icon {
   font-size: 2rem;
   margin-bottom: 8px;
 }
 
-.day-card .range {
+.day-card .range,
+.hour-card .temp {
   color: var(--muted);
   font-size: 0.95rem;
 }
