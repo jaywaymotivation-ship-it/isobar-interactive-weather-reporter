@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Isobar Weather Report</title>
+    <meta
+      name="description"
+      content="Interactive weather reporter built with Open-Meteo data."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="brand-wrap">
+          <div class="brand-mark">I</div>
+          <div>
+            <p class="eyebrow">Weather intelligence</p>
+            <h1>Isobar</h1>
+          </div>
+        </div>
+      </header>
+
+      <main class="app">
+        <section class="search-panel card">
+          <label for="cityInput" class="label">Choose a location</label>
+          <div class="search-row">
+            <input
+              id="cityInput"
+              type="text"
+              value="London"
+              placeholder="Search for a city"
+              aria-label="City name"
+            />
+            <button id="searchButton" type="button">Report</button>
+          </div>
+        </section>
+
+        <section id="status" class="status" aria-live="polite"></section>
+
+        <section class="weather-grid">
+          <article id="todayCard" class="card weather-card highlight" aria-live="polite">
+            <div class="weather-header">
+              <div>
+                <p class="eyebrow">Current conditions</p>
+                <h2 id="locationName">Loading...</h2>
+              </div>
+              <div id="weatherIcon" class="weather-icon" aria-hidden="true">☀️</div>
+            </div>
+
+            <div class="temperature-row">
+              <div id="temperature" class="temperature">--°C</div>
+              <div id="summary" class="summary">Preparing report...</div>
+            </div>
+
+            <dl class="stats">
+              <div>
+                <dt>Feels like</dt>
+                <dd id="feelsLike">--°C</dd>
+              </div>
+              <div>
+                <dt>Humidity</dt>
+                <dd id="humidity">--%</dd>
+              </div>
+              <div>
+                <dt>Wind</dt>
+                <dd id="wind">-- km/h</dd>
+              </div>
+            </dl>
+          </article>
+
+          <aside class="card narrative-panel">
+            <p class="eyebrow">Narrative</p>
+            <h3>Weather report</h3>
+            <p id="narrative" class="narrative">
+              Checking the atmosphere for your selected location.
+            </p>
+          </aside>
+        </section>
+
+        <section class="card forecast-panel">
+          <div class="forecast-header">
+            <p class="eyebrow">Forecast</p>
+            <h3>Next few days</h3>
+          </div>
+          <div id="forecast" class="forecast-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
