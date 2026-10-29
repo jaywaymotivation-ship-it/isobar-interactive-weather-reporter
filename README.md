@@ -3,6 +3,7 @@ const searchButton = document.getElementById('searchButton');
 const useLocationButton = document.getElementById('useLocationButton');
 const themeToggle = document.getElementById('themeToggle');
 const unitToggle = document.getElementById('unitToggle');
+const recentLocationsEl = document.getElementById('recentLocations');
 const statusEl = document.getElementById('status');
 const locationNameEl = document.getElementById('locationName');
 const weatherIconEl = document.getElementById('weatherIcon');
@@ -19,7 +20,8 @@ const recommendationEl = document.getElementById('recommendation');
 const forecastEl = document.getElementById('forecast');
 const hourlyForecastEl = document.getElementById('hourlyForecast');
 
-const defaultLocation = 'London';
+const DEFAULT_LOCATION = 'London';
+const RECENT_KEY = 'isobar_recent_locations';
 let currentTheme = 'dark';
 let currentUnit = 'C';
 let currentWeatherData = null;
@@ -74,6 +76,7 @@ function setTheme(theme) {
   document.body.classList.toggle('theme-light', theme === 'light');
   document.body.classList.toggle('theme-dark', theme === 'dark');
   themeToggle.textContent = theme === 'light' ? '☀️ Light mode' : '🌙 Dark mode';
+  localStorage.setItem('isobar_theme', theme);
 }
 
 function formatClock(value) {
@@ -134,6 +137,33 @@ function getWeatherSummary(code, temperature) {
   if (temperature >= 10) return `${current.label} and pleasantly cool.`;
   if (temperature >= 0) return `${current.label} with a brisk chill.`;
   return `${current.label} and cold.`;
+}
+
+function renderRecentLocations() {
+  const recent = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+  recentLocationsEl.innerHTML = '';
+
+  recent.slice(0, 5).forEach((location) => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'location-chip';
+    chip.textContent = location;
+    chip.addEventListener('click', () => {
+      cityInput.value = location;
+      loadWeatherForInput();
+    });
+    recentLocationsEl.appendChild(chip);
+  });
+}
+
+function saveRecentLocation(location) {
+  const cleaned = location.trim();
+  if (!cleaned) return;
+
+  const previous = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+  const next = [cleaned, ...previous.filter((x) => x !== cleaned)].slice(0, 5);
+  localStorage.setItem(RECENT_KEY, JSON.stringify(next));
+  renderRecentLocations();
 }
 
 function renderForecast(days) {
@@ -337,13 +367,14 @@ function refreshDisplayedUnit() {
 }
 
 async function loadWeatherForInput() {
-  const city = cityInput.value.trim() || defaultLocation;
+  const city = cityInput.value.trim() || DEFAULT_LOCATION;
 
   setStatus('Gathering weather data...');
 
   try {
     const data = await fetchWeatherForCity(city);
     renderWeather(data);
+    saveRecentLocation(data.location.name);
     setStatus(`Updated for ${data.location.name}.`);
   } catch (error) {
     setStatus(error.message || 'Something went wrong while fetching the weather.', true);
@@ -367,6 +398,7 @@ async function loadWeatherFromUserLocation() {
         );
         cityInput.value = data.location.name;
         renderWeather(data);
+        saveRecentLocation(data.location.name);
         setStatus(`Showing weather for ${data.location.name}.`);
       } catch (error) {
         setStatus(error.message || 'Unable to fetch local weather.', true);
@@ -396,6 +428,10 @@ themeToggle.addEventListener('click', () => {
   setTheme(currentTheme === 'dark' ? 'light' : 'dark');
 });
 
-setTheme('dark');
+const savedTheme = localStorage.getItem('isobar_theme');
+if (savedTheme === 'light') setTheme('light');
+else setTheme('dark');
+
 unitToggle.textContent = '°F';
+renderRecentLocations();
 loadWeatherForInput();

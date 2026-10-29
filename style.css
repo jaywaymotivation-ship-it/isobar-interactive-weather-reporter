@@ -12,6 +12,7 @@
   --day-card: rgba(9, 22, 31, 0.6);
   --button-text: #041924;
   --insight-bg: rgba(120, 210, 255, 0.08);
+  --chip-bg: rgba(255, 255, 255, 0.04);
 }
 
 body.theme-light {
@@ -28,6 +29,7 @@ body.theme-light {
   --day-card: rgba(241, 247, 255, 0.9);
   --button-text: #f3fbff;
   --insight-bg: rgba(75, 180, 255, 0.08);
+  --chip-bg: rgba(30, 60, 90, 0.04);
 }
 
 * {
@@ -150,6 +152,23 @@ h1 {
 .search-row {
   display: flex;
   gap: 12px;
+}
+
+.recent-locations {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.location-chip {
+  background: var(--chip-bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 0.82rem;
+  cursor: pointer;
 }
 
 input {
